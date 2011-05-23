@@ -1,5 +1,9 @@
 CHANGELOG
 
+* May 32, 2011 *
+
+Adding methods to access unescaped values
+
 * June 2, 2008 *
 
 Update xss_terminate to support ActiveRecordStore in Rails 2.1. Fixes issue #2.

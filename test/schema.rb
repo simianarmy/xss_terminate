@@ -11,14 +11,14 @@ ActiveRecord::Schema.define(:version => 0) do
     t.column :created_on, :datetime
   end
 
-  create_table :comments, :force => true do |t|
+  create_table :xss_comments, :force => true do |t|
     t.column :person_id, :integer
     t.column :title, :string
     t.column :body, :text
     t.column :created_on, :datetime
   end
   
-  create_table :messages, :force => true do |t|
+  create_table :xss_messages, :force => true do |t|
     t.column :person_id, :integer
     t.column :recipient_id, :integer
     t.column :body, :text

@@ -15,7 +15,10 @@ module XssTerminate
         :sanitize => (options[:sanitize] || [])
       })
       
+      write_inheritable_attribute :raw_values, {}
+      
       class_inheritable_reader :xss_terminate_options
+      class_inheritable_reader :raw_values
       
       include XssTerminate::InstanceMethods
     end
@@ -24,6 +27,7 @@ module XssTerminate
   module InstanceMethods
 
     def sanitize_fields
+
       # fix a bug with Rails internal AR::Base models that get loaded before
       # the plugin, like CGI::Sessions::ActiveRecordStore::Session
       return if xss_terminate_options.nil?
@@ -33,7 +37,7 @@ module XssTerminate
         
         field = column.name.to_sym
         value = self[field]
-
+        
         next if value.nil? || !value.is_a?(String)
         
         if xss_terminate_options[:except].include?(field)
@@ -45,8 +49,20 @@ module XssTerminate
         else
           self[field] = RailsSanitize.full_sanitizer.sanitize(value)
         end
+        # Save unsanitized value to instance hash, but only first time!
+        # It performs validations multiple times and value can == "" on 
+        # repeated attempts.  Expected behavior?
+        raw_values[field] ||= value
+      end  
+    end
+    
+    def method_missing(method)
+      # Calling raw_* will look for unencoded attribute and return one if found
+      if (method.to_s =~ /^raw_(\w+)$/)
+        raw_values[$1.to_sym]
+      else
+        super
       end
-      
     end
   end
 end

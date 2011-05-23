@@ -2,7 +2,7 @@ require File.join(File.dirname(__FILE__), 'setup_test')
 
 class XssTerminateTest < Test::Unit::TestCase
   def test_strip_tags_on_discovered_fields
-    c = Comment.create!(:title => "<script>alert('xss in title')</script>",
+    c = XssComment.create!(:title => "<script>alert('xss in title')</script>",
                         :body => "<script>alert('xss in body')</script>")
 
     assert_equal "alert('xss in title')", c.title
@@ -55,17 +55,9 @@ class XssTerminateTest < Test::Unit::TestCase
     assert_nil review.title
     assert_nil review.body
   end
-  
-  # issue reported by Garrett Dimon and jmcnevin
-  def test_active_record_session_store_does_not_cause_nil_exception
-    assert_nil CGI::Session::ActiveRecordStore::Session.xss_terminate_options
-
-    session = CGI::Session::ActiveRecordStore::Session.new(:session_id => 'foo', :data => 'blah')
-    assert session.save
-  end
 
   def test_do_not_save_invalid_models_after_sanitizing
-    c = Comment.new(:title => "<br />")
+    c = XssComment.new(:title => "<br />")
     assert !c.save
     assert_not_nil c.errors.on(:title)
   end
@@ -80,4 +72,24 @@ class XssTerminateTest < Test::Unit::TestCase
     assert g.save
   end
 
+  def test_saves_raw_fields_after_sanitizing
+    e = Entry.create!(:title => "<script>alert('xss in title')</script>",
+                      :body => "<script>alert('xss in body')</script>",
+                      :extended => "<script>alert('xss in extended')</script>",
+                      :person_id => 1)
+
+    assert_equal e.raw_body, "<script>alert('xss in body')</script>", e.raw_values.inspect
+  end
+  
+  def test_return_nil_raw_string_on_missing_attribute
+    e = Entry.create!(:title => "<script>alert('xss in title')</script>",
+                      :body => "<script>alert('xss in body')</script>")
+    assert_nil e.raw_attribute_does_not_exist
+  end
+  
+  def test_method_missing_still_works
+    assert_raise NoMethodError do 
+      Entry.new.fooboo 
+    end
+  end
 end

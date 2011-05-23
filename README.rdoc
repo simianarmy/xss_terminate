@@ -58,6 +58,19 @@ and others sanitized. Fields not listed in the option arrays will be stripped.
    xss_terminate :except => [ :body ], :sanitize => [ :title ]
  end
 
+When creating or updating with new values, you can access the unencoded values
+from the model using the raw_ helper methods.
+* Warning, these methods will only work with new objects.  They will not work
+on records returned from find() calls.
+
+  class Message < ActiveRecord::Base
+     xss_terminate :except => [ :body ], :sanitize => [ :title ]
+  end
+  
+  msg = Message.new(:title => "arr matey<script>evil</script>")
+  msg.raw_title
+    => "arr matey<script>evil</script>"
+    
 == Sanitizing existing records
 
 After installing +xss_terminate+ and configuring it to your liking, you can 

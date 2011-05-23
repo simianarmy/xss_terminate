@@ -1,4 +1,4 @@
 # not sanitized
-class Message < ActiveRecord::Base
+class XssMessage < ActiveRecord::Base
   belongs_to :person
 end
