@@ -46,8 +46,9 @@ module XssTerminate
           self[field] = HTML5libSanitize.new.sanitize_html(value)
         elsif xss_terminate_options[:sanitize].include?(field)
           self[field] = RailsSanitize.white_list_sanitizer.sanitize(value)
-        else
-          self[field] = RailsSanitize.full_sanitizer.sanitize(value)
+        else 
+          # HTML5lib IS THE DEFAULT IN MY FORK !!
+          self[field] = HTML5libSanitize.new.sanitize_html(value)
         end
         # Save unsanitized value to instance hash, but only first time!
         # It performs validations multiple times and value can == "" on 
