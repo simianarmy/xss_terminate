@@ -15,7 +15,7 @@ module XssTerminate
         :sanitize => (options[:sanitize] || [])
       })
       
-      attr_accessor :raw_values
+      attr_reader :raw_values
       
       class_inheritable_reader :xss_terminate_options
       
@@ -30,9 +30,6 @@ module XssTerminate
       # fix a bug with Rails internal AR::Base models that get loaded before
       # the plugin, like CGI::Sessions::ActiveRecordStore::Session
       return if xss_terminate_options.nil?
-      
-      # initialize raw values storage
-      self.raw_values = {}
       
       self.class.columns.each do |column|
         next unless (column.type == :string || column.type == :text)
@@ -52,19 +49,14 @@ module XssTerminate
           # HTML5lib IS THE DEFAULT IN MY FORK !!
           self[field] = HTML5libSanitize.new.sanitize_html(value)
         end
-
         # Save unsanitized value to instance hash
-        self.raw_values[field] = value
+        # Multiple-validation will save sanitized value, so only save first time
+        (@raw_values||={})[field] ||= value
       end  
     end
     
-    def method_missing(method)
-      # Calling raw_* will look for unencoded attribute and return one if found
-      if (method.to_s =~ /^raw_(\w+)$/)
-        raw_values[$1.to_sym] if !raw_values.nil?
-      else
-        super
-      end
+    def raw_attribute(attr)
+      raw_values[attr] if raw_values
     end
   end
 end

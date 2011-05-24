@@ -59,7 +59,7 @@ and others sanitized. Fields not listed in the option arrays will be stripped.
  end
 
 When creating or updating with new values, you can access the unencoded values
-from the model using the raw_ helper methods.
+from the model using the raw_attribute method.
 * Warning, these methods will only work with new objects.  They will not work
 on records returned from find() calls.
 
@@ -68,7 +68,7 @@ on records returned from find() calls.
   end
   
   msg = Message.new(:title => "arr matey<script>evil</script>")
-  msg.raw_title
+  msg.raw_attribute(:title)
     => "arr matey<script>evil</script>"
     
 == Sanitizing existing records

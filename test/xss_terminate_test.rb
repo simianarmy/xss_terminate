@@ -74,17 +74,10 @@ class XssTerminateTest < Test::Unit::TestCase
 
   def test_saves_raw_fields_after_sanitizing
     e = Entry.create!(:title => "<script>alert('xss in title')</script>",
-                      :body => "<script>alert('xss in body')</script>",
-                      :extended => "<script>alert('xss in extended')</script>",
                       :person_id => 1)
-
-    assert_equal e.raw_body, "<script>alert('xss in body')</script>", e.raw_values.inspect
-  end
-  
-  def test_return_nil_raw_string_on_missing_attribute
-    e = Entry.create!(:title => "<script>alert('xss in title')</script>",
-                      :body => "<script>alert('xss in body')</script>")
-    assert_nil e.raw_attribute_does_not_exist
+    
+    assert_equal "&lt;script&gt;alert('xss in title')&lt;/script&gt;", e.title
+    assert_equal e.raw_attribute(:title), "<script>alert('xss in title')</script>"
   end
   
   def test_method_missing_still_works
